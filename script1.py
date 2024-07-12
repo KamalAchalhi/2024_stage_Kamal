@@ -24,14 +24,15 @@ def etape1(nom_general_sujet, path_pattern, path_ouput, Nom_Atlas_anatomic_Patte
             list_tranf_inv :  Listes Path pour chaque transformation inverse (best atlas to his sujet i)
     """
 
+    ###COMMENTER LE MAXIMUM DE LIGNE POUR RENDRE CLAIRE
     debut = time.time()
-    files_atlas = tls.Parcours_dossier_only_data_match(path_des_atlas, Nom_Atlas_anatomic_Pattern)
-    tab_path_sujet = tls.recup_les_sujets(nom_general_sujet, pattern_sous_repertoire_by_sujet=path_pattern)
+    files_atlas = tls.Parcours_dossier_only_data_match(path_des_atlas, Nom_Atlas_anatomic_Pattern)   #
+    tab_path_sujet = tls.recup_les_sujets(nom_general_sujet, pattern_sous_repertoire_by_sujet=path_pattern)  #
     print(tab_path_sujet)
-    list_path_sujet_rot = [tls.creation_PATH_pour_fichier_swaper(sujet_path, path_ouput) for sujet_path in tab_path_sujet]
+    list_path_sujet_rot = [tls.creation_PATH_pour_fichier_swaper(sujet_path, path_ouput) for sujet_path in tab_path_sujet] #
     for path_sujet_rot, path_sujet in zip(list_path_sujet_rot, tab_path_sujet):
         tls.SWAP_COPY_INFO_SAVE(path_sujet, path_sujet_rot)
-    tab_repertoire, tab_img_sujet = tls.path_abs_sujet_to_fichier_repertorie_sujet(list_path_sujet_rot)
+    tab_repertoire, tab_img_sujet = tls.path_abs_sujet_to_fichier_repertorie_sujet(list_path_sujet_rot) #
     print(tab_img_sujet)
 
     criteres = ['MattesMutualInformation']
