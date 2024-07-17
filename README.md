@@ -42,7 +42,7 @@ un swaping est réalisés sur les sujets segmentés avant d'aditionner chaques i
 Les parties qui dépassent sont effacés, le format des niveau de gris sont imposés de manière à être entière et les tableaus numpy qui contiennent la combinaison sont sauvé en format nifiti.
 
 
-#### Le dossier variables contient des listes de chemins de fichiers sauvés, notamment : 
+#### Le dossier variables (contient des listes de chemins de fichiers sauvés) : 
 Ceux des sujets anatomiques que l'on a transposés et inversés selon certains axes (swaping).
 
 Ceux des atlas d'âge adaptés pour chaque sujets mis en entrée dans le script1.
@@ -53,7 +53,7 @@ Ceux des atlas binarisés projetés vers l'espace sujet par le script2 en utilis
 
 
 
-### tutoriel
+### Tutoriel
 Pour appliquer le pipeline à une image, suivre la procédure suivante:
 Il faut preparer pour le script1 les diffèrents chemins nécessaires pour la récupérations des données. 
 On lui donne donc :
