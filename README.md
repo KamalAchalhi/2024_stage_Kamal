@@ -98,7 +98,6 @@ Pattern du nom d'une image segmentées.
 
 Path de sortie des images après ce dernier traitement.
 
-###Schéma résumé
-![Image reécapitulative] (/envau/work/meca/users/2024_Kamal/2024_stage_Kamal/thumbnail_SHEMAS_REALISATION.png) 
+![Image recapitulative] (/envau/work/meca/users/2024_Kamal/2024_stage_Kamal/thumbnail_SHEMAS_REALISATION.png) 
 
                         
