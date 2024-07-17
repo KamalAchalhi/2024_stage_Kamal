@@ -56,7 +56,7 @@ Ceux des atlas binarisés projetés vers l'espace sujet par le script2 en utilis
 ### Tutoriel
 Pour appliquer le pipeline à une image, suivre la procédure suivante:
 Il faut preparer pour le script1 les diffèrents chemins nécessaires pour la récupérations des données. 
-#### input :  
+#### Input :  
 
 Path du repertoire contenant les atlas.
 
@@ -69,10 +69,10 @@ Pattern du nom des Atlas.
 Path de sortie pour les données retournées.
 
 Path de sortie pour stockages des variables réutilisées dans les prochains scripts.
-#### OUTPUT : LISTES MEILLEURS ATLAS, PATH SUJETS SWAPÉS, PATH DES TRANSFORMATIONS De recalage
+#### Output : Listes des meilleurs atlas, des paths sujets swapés et des paths des transformations de recalage directes et inverses
 
 pour initialiser le script2, il faut donner:
-#### INPUT : 
+#### Input : 
 Path des variables (pour récupérer les données retournées par le script1).
 
 Path output du script1 qui contient les images de sujet "swapé".
@@ -85,9 +85,9 @@ nom des fichiers contenant les diffèrentes variables.
 
 Charger les données sauvés par le script1 notamment les variables des listes contenant les noms des meilleurs atlas,
 les chemins des transformations, et liste chemins vers les sujets swapés.
-#### OUTPUT : LISTES PATH VERS MASQUE ATLAS PAR HEMISPHÈRE RECALÉ DANS ESPACE SUJET
+#### Output : Listes des masques d'hemisphères d'atlas après recalage.
 Le scriptFIN nécessite :
-#### INPUT : 
+#### Input : 
 Path des variables et nom du fichiers des atlas recalés enregistrés dans le script2.
 nom des fichiers contenants la listes des paths des masques atlas des hemisphères , et de celui contenant la listes des sujets swapés.
 
