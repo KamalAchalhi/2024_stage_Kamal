@@ -20,30 +20,24 @@ def etape4(nom_general_sujet, all_sujets_path,path_output, tab_path_sujet, Atlas
 
     """
     debut = time.time()
-    print(tab_path_sujet)
-    tab_repertoire, tab_img_sujet = tls.path_abs_sujet_to_fichier_repertorie_sujet(tab_path_sujet)
-    print(tab_repertoire, tab_img_sujet)
-    #Recuperation des images segmentés et on les swap :
-    list_path_img_segmente = tls.recup_les_sujets(nom_general_sujet, repertoire_sujet_segm=all_sujets_path)
-    print(list_path_img_segmente)
-    list_path_img_segmente_rot = [tls.creation_PATH_pour_fichier_swaper(sujet_path, path_output) for sujet_path in list_path_img_segmente]
+    tab_repertoire, tab_img_sujet = tls.path_abs_sujet_to_fichier_repertorie_sujet(tab_path_sujet) #Recuperation nom sujet anatomique swapé
+    list_path_img_segmente = tls.recup_les_sujets(nom_general_sujet, repertoire_sujet_segm=all_sujets_path) #recuperation dans liste des path des sujets segmentés
+    list_path_img_segmente_rot = [tls.creation_PATH_pour_fichier_swaper(sujet_path, path_output) for sujet_path in list_path_img_segmente] #creation des chemin où sauver les images de sujet segmenter apres swaping
     for path_sujet_rot, path_sujet in zip(list_path_img_segmente_rot, list_path_img_segmente):
         tls.SWAP_COPY_INFO_SAVE(path_sujet, path_sujet_rot)
-    print(AtlasRL_rec_dans_sub_space)
-    
-    # ON additionne apres passage en numpy array les tableau de l'image segmenté du sujet l'image de l'hemisphère droit*10
+
     for path_sujet_segm, AtlasRL_rec_dans_sub_space, sujet in zip(list_path_img_segmente_rot, AtlasRL_rec_dans_sub_space, tab_img_sujet):
-        img_sujet_segmente = nib.load(path_sujet_segm)
-        dtype_img_sujet_segm = img_sujet_segmente.get_data_dtype()
-        img_sujet_segmente_array = img_sujet_segmente.get_fdata()
-        AtlasLR_rec_dans_sub_space_array = nib.load(AtlasRL_rec_dans_sub_space).get_fdata()
-        img_sujet_segm_binar_combined_array = img_sujet_segmente_array + 100 * AtlasLR_rec_dans_sub_space_array
-        img_sujet_segm_binar_combined_array[img_sujet_segm_binar_combined_array == 100] = 0
-        img_sujet_segm_binar_combined_array[img_sujet_segm_binar_combined_array == 200] = 0
-        img_sujet_segm_binar_combined_array = img_sujet_segm_binar_combined_array.astype(dtype_img_sujet_segm)
-        image_segm_final = nib.Nifti1Image(img_sujet_segm_binar_combined_array, img_sujet_segmente.affine, img_sujet_segmente.header)
-        path_img_final = tls.creation_chemin_nom_img(path_output, sujet, "segmentation_LR.nii.gz")
-        nib.save(image_segm_final, path_img_final)
+        img_sujet_segmente = nib.load(path_sujet_segm)  #charme img nifti du ieme sujet segmenté
+        dtype_img_sujet_segm = img_sujet_segmente.get_data_dtype() #recupe son type de donnée
+        img_sujet_segmente_array = img_sujet_segmente.get_fdata() #conversion en tableau numpy
+        AtlasLR_rec_dans_sub_space_array = nib.load(AtlasRL_rec_dans_sub_space).get_fdata() #recup l'atlas RL du ieme sujet recale ds espace sujet en forme de tableau numpy
+        img_sujet_segm_binar_combined_array = img_sujet_segmente_array + 100 * AtlasLR_rec_dans_sub_space_array #Combinaison des deux tableau en rehaussant intensité des pixels de l'atlas RL
+        img_sujet_segm_binar_combined_array[img_sujet_segm_binar_combined_array == 100] = 0 #Retire les parties qui depassaientt à droite
+        img_sujet_segm_binar_combined_array[img_sujet_segm_binar_combined_array == 200] = 0 #Retire les parties qui depassaient à gauche
+        img_sujet_segm_binar_combined_array = img_sujet_segm_binar_combined_array.astype(dtype_img_sujet_segm) #J'impose le type de donnée de l'image du sujet intial pour garder le format int pour chaque zone segmentation
+        image_segm_final = nib.Nifti1Image(img_sujet_segm_binar_combined_array, img_sujet_segmente.affine, img_sujet_segmente.header) #Je convertir le tableau numpy en format nifiti en copiant info geo
+        path_img_final = tls.creation_chemin_nom_img(path_output, sujet, "segmentation_LR.nii.gz") #je crée chemin où sauver mes images finages de sujet segmenté RL
+        nib.save(image_segm_final, path_img_final) #j'enregistre l'image dans le path crée
     fin = time.time()
     tps_excecution = fin - debut
     print(f"le temps d'exécution du programme est : {tps_excecution} secondes")
