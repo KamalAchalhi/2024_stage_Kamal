@@ -53,7 +53,7 @@ Ceux des atlas binarisés projetés vers l'espace sujet par le script2 en utilis
 
 
 
-### Tutoriel
+## Tutoriel
 Pour appliquer le pipeline à une image, suivre la procédure suivante:
 Il faut preparer pour le script1 les diffèrents chemins nécessaires pour la récupérations des données. 
 #### Input :  
