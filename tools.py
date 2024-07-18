@@ -13,24 +13,23 @@ je vais expliquer ce que fais chaque fonction
 def recup_les_sujets(nom_general_sujet, repertoire_sujet_segm = None, pattern_sous_repertoire_by_sujet = None):
     """
 
-    :param nom_general_sujet:
-    :param repertoire_sujet_segm:
-    :param pattern_sous_repertoire_by_sujet:
+    :param nom_general_sujet: format nom des sujet recherché
+    :param repertoire_sujet_segm: argument qui prends le path du repertoire où se trouve les sujets segemnté
+    :param pattern_sous_repertoire_by_sujet: argument qui prends le path des repertoires où se trouve les sujets anatomiques
     :return:
     """
     file_paths = []
-    pattern = re.compile(nom_general_sujet)
-
-    if repertoire_sujet_segm :
-        for file in os.listdir(repertoire_sujet_segm):
-             if pattern.match(file):
-                    file_paths.append(os.path.join(repertoire_sujet_segm ,file))
-    elif pattern_sous_repertoire_by_sujet:
-        path_pattern = re.compile(pattern_sous_repertoire_by_sujet)
-        for root, _, files in os.walk("/envau/work/meca/users/2024_Kamal/real_data/lastest_nesvor/"):
-            if path_pattern.search(root):
-                for file in files :
-                    if pattern.match(file):
+    pattern = re.compile(nom_general_sujet) #Crée un pattern correspondant au format du nom à rechercher
+    if repertoire_sujet_segm :  #1er cas possible correpondant à l'une des deux utilisisation de cet algo, si l'argument feedé est le repertoire des sujet segm
+        for file in os.listdir(repertoire_sujet_segm):  #On parcours chaque fichier du repertoire
+             if pattern.match(file):  #s'il y a correspondance entre un fichier donnée et le pattern cherché
+                    file_paths.append(os.path.join(repertoire_sujet_segm ,file))  # on rajoute à la list des path, le path complet du fichier
+    elif pattern_sous_repertoire_by_sujet: #2ieme cas, si c'est l'argument du pattern des differents sous repertoires contenant les sujets qui est feedé
+        path_pattern = re.compile(pattern_sous_repertoire_by_sujet)  #creation 2ieme pattern correspondant au format des paths des sujets anatomiques
+        for root, _, files in os.walk("/envau/work/meca/users/2024_Kamal/real_data/lastest_nesvor/"): #On parcours chaque sous repertoire et fichiers du repertoire initial
+            if path_pattern.search(root): # Si le sous repertoire correspond au format recherché alors :
+                for file in files : #on y parcours tout les fichiers du repertoire correspodant
+                    if pattern.match(file): #Si un fichier correspond au format de nom rechercher pour sujet anatomique, --> on l'ajoute
                         file_paths.append(os.path.join(root, file))
     return sorted(file_paths)
 
@@ -38,79 +37,66 @@ def recup_les_sujets(nom_general_sujet, repertoire_sujet_segm = None, pattern_so
 def copy_info_geo(path_img_input, path_img_input_copied):
     """
 
-    :param path_img_input:
-    :param path_img_input_copied:
+    :param path_img_input: chemin de l'image dont on veut copier les infos geometriques
+    :param path_img_input_copied: chemin de l'image qui va recevoir les infos geometriques
     :return:
     """
-    img_copied = nib.load(path_img_input_copied)
-    print(np.shape(img_copied))
-    img_input = nib.load(path_img_input).get_fdata()
-    print(np.shape(img_input))
-    return nib.Nifti1Image(img_input, img_copied.affine, img_copied.header)
+    img_copied = nib.load(path_img_input_copied)  #charge l'image en format nifti
+    img_input = nib.load(path_img_input).get_fdata()  #charge l'image en format numpy array necessaire pour recevoir les infos geo
+    return nib.Nifti1Image(img_input, img_copied.affine, img_copied.header)  # on converti en format nifti un numpy array tout en copiant les infos geo provenant de l'image donneuse resté en format nifti
 
 
 def SWAP_COPY_INFO_SAVE(path_img_input, path_img_rot_nifti):
     """
 
-    :param path_img_input:
-    :param path_img_rot_nifti:
+    :param path_img_input: chemin image initial avant traitement
+    :param path_img_rot_nifti: chemin image apres traitement par swap pour la sauver
     :return:
     """
-    img_input = nib.load(path_img_input)
-    img_input_array = img_input.get_fdata()
-    original_data_type = img_input.get_data_dtype()
-    img_input_array_rot = np.transpose(img_input_array, (0, 1, 2))[::1, ::1, ::-1]
-    img_input_array_rot = img_input_array_rot.astype(original_data_type)
-    img_input_rot_nifti = nib.Nifti1Image(img_input_array_rot, img_input.affine, img_input.header)
-    nib.save(img_input_rot_nifti, path_img_rot_nifti)
+    img_input = nib.load(path_img_input)  # Image input à swaper en format nifti
+    img_input_array = img_input.get_fdata()     # conversion en numpy array pour realiser le swap
+    original_data_type = img_input.get_data_dtype()  # on recupère le data type de l'image format nifti pr pas le perdre
+    img_input_array_rot = np.transpose(img_input_array, (0, 1, 2))[::1, ::1, ::-1]  # transpose np array en inversant le dernier axe
+    img_input_array_rot = img_input_array_rot.astype(original_data_type)        # impose le data type initial au tableau
+    img_input_rot_nifti = nib.Nifti1Image(img_input_array_rot, img_input.affine, img_input.header)  # On converti en nifti en copiant
+    nib.save(img_input_rot_nifti, path_img_rot_nifti)  # On sauve l'image swapé dans le path donnée en input
 
 
 def creation_PATH_pour_fichier_swaper(path_sujet, repertoire_output):
     """
 
-    :param path_sujet:
-    :param repertoire_output:
+    :param path_sujet: path des images initial avant traitement
+    :param repertoire_output: path de sortie pour sauver les image apres traitement par swapping
     :return:
     """
-    fichier = os.path.basename(path_sujet)
-    print(fichier)
-    nom_initial, fin = (fichier[:-7], ".nii.gz") if fichier.endswith(".nii.gz") else os.path.splitext(fichier)
-    return os.path.join(repertoire_output, f"{nom_initial}_rot{fin}")
-
-
-def Parcours_dossier_only_data_match(Path, nom_caracteristic):
-    """
-
-    :param Path:
-    :param nom_caracteristic:
-    :return:
-    """
-    pattern = re.compile(nom_caracteristic)
-    return sorted(f for f in os.listdir(Path) if pattern.match(f))
+    fichier = os.path.basename(path_sujet)  # on recupere uniquement le nom du fichier
+    nom_initial, fin = (fichier[:-7], ".nii.gz") if fichier.endswith(".nii.gz") else os.path.splitext(fichier)  # on separe le nom en tant que tel et le suffixe (nii.gz de nifiti)
+    return os.path.join(repertoire_output, f"{nom_initial}_rot{fin}")  # création d'un nouveau path vers le repertoire donné en input et
+                                                                       # le nom recuperer ci dessus avec le suffixe rot pour decrire le traitement et le suffixe nifiti
 
 
 def calcul_similarity_ants(img1, img2, critere, path_mask = None):
     """
 
-    :param img1:
-    :param img2:
-    :param critere:
-    :param path_mask:
+    :param img1: 1er image input
+    :param img2: 2ieme image input
+    :param critere: metrique de similarite utitise pour calcul de similarité entre image
+    :param path_mask: si un chemin pour un masque est donné en input
     :return:
     """
-    return ants.image_similarity(img1, img2, metric_type=critere, fixed_mask=None, moving_mask=path_mask)
+    return ants.image_similarity(img1, img2, metric_type=critere, fixed_mask=None, moving_mask=path_mask)  # Calcul similarite selon critere imposé et masque de l'image mouvante si donné
 
 
 def Recalage_atlas(atlas_fix, img_mouv, type_transfo, interpolator):
     """
 
-    :param atlas_fix:
-    :param img_mouv:
-    :param type_transfo:
-    :param interpolator:
+    :param atlas_fix: image fixe ou de reference vers laquelle on va recaler 'ici l'atlas)
+    :param img_mouv: image à recalé vers l'image referente (ici image sujet)
+    :param type_transfo: type de fonction de recalage (rigide, affine, SyN etc)
+    :param interpolator: type d'interpolation lors du recalage (proche voisins, lineaires etc)
     :return:
     """
-    warp_sub = ants.registration(atlas_fix, img_mouv, type_of_transform=type_transfo)
+    warp_sub = ants.registration(atlas_fix, img_mouv, type_of_transform=type_transfo)  #
     return ants.apply_transforms(atlas_fix, img_mouv, transformlist=warp_sub['fwdtransforms'], interpolator=interpolator)
 
 
