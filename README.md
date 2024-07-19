@@ -16,11 +16,16 @@ pip install antspyx
 ### Dossier CODE
 #### tools : Ce fichier python contient toutes les fonctions que j'utilise lors des diffèrentes étapes de la pipeline :
 Fonction de récuperéation de fichier selon pattern.
-fonction de création de chemin (récupère le path d'entrée et  modifie le nom du fichier pour qu'il puisse être adapté au processus qui a été utilisé (ajout de ROT pour fichier après 'swap', 
+
+Fonction de création de chemin (récupère le path d'entrée et  modifie le nom du fichier pour qu'il puisse être adapté au processus qui a été utilisé (ajout de ROT pour fichier après 'swap', 
 fusionnée des noms apres recalage et indiquer direction de recalage ex:  "sub-0002_ses-0002_acq-haste_rec-nesvor_desc-aligned_T2w_rot_STA21_all_reg_LR_dilM.nii.gz")).
+
 Fonction qui recale image sujet à une liste donnée d'atlas et qui estime la similarité.
+
 Fonction qui cherche et retourne l'atlas qui maximise la similarité.
+
 Fonction qui enregistre la transformé inverse de recalage dans un output choisis, retourne le path.
+
 Fonction qui 'swap' et copie et enregistre les informations géometriques.
 
 
