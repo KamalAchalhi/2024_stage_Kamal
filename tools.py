@@ -91,145 +91,134 @@ def Recalage_atlas(atlas_fix, img_mouv, type_transfo, interpolator):
     """
 
     :param atlas_fix: image fixe ou de reference vers laquelle on va recaler 'ici l'atlas)
-    :param img_mouv: image à recalé vers l'image referente (ici image sujet)
+    :param img_mouv: image à recaler vers l'image referente (ici image sujet)
     :param type_transfo: type de fonction de recalage (rigide, affine, SyN etc)
     :param interpolator: type d'interpolation lors du recalage (proche voisins, lineaires etc)
     :return:
     """
-    warp_sub = ants.registration(atlas_fix, img_mouv, type_of_transform=type_transfo)  #
-    return ants.apply_transforms(atlas_fix, img_mouv, transformlist=warp_sub['fwdtransforms'], interpolator=interpolator)
-
-
-def SAVE_Transfo_rec_mat(atlas_fix, img_mouv, type_transfo, file_transfo_direct, file_transfo_inv, name_sujet, name_atlas):
-    """
-
-    :param atlas_fix:
-    :param img_mouv:
-    :param type_transfo:
-    :param file_transfo_direct:
-    :param file_transfo_inv:
-    :param name_sujet:
-    :param name_atlas:
-    :return:
-    """
-    path_file_transfo_direct = creation_chemin_fichier_mat(file_transfo_direct, name_sujet, name_atlas)
-    path_file_transfo_inv = creation_chemin_fichier_mat(file_transfo_inv, name_sujet, name_atlas)
-    ants.registration(atlas_fix, img_mouv, type_of_transform=type_transfo, outprefix=path_file_transfo_direct + '_direct_')
-    ants.registration(img_mouv, atlas_fix, type_of_transform=type_transfo, outprefix=path_file_transfo_inv + '_Inverse_')
-    return path_file_transfo_direct, path_file_transfo_inv
+    warp_sub = ants.registration(atlas_fix, img_mouv, type_of_transform=type_transfo)  # variable contenant la transformation de recalage calculé de img_mouv vers atlas_fix
+    return ants.apply_transforms(atlas_fix, img_mouv, transformlist=warp_sub['fwdtransforms'], interpolator=interpolator)  # retourne l'image mouv après application de la transformation de recalage determiné en haut selon type d'interpolation donnée par user
+                                                                                                                        #fwdtransforms correspond à la transfo direct vers l'espace de reference
 
 
 def path_abs_sujet_to_fichier_repertorie_sujet(tab_path):
     """
 
-    :param tab_path:
+    :param tab_path: list de path complet d'un fichier donné
     :return:
     """
-    repertoire = [os.path.dirname(path) for path in tab_path]
-    fichier = [os.path.basename(path) for path in tab_path]
+    repertoire = [os.path.dirname(path) for path in tab_path]   # parcours list path complet et recup le path du repertoire
+    fichier = [os.path.basename(path) for path in tab_path]  # parcours list path complet et recup le nom fichier
     return repertoire, fichier
-
-
-def Enregistrer_img_ants_en_nifit(img, path_repertoire, nom_img):
-    """
-
-    :param img:
-    :param path_repertoire:
-    :param nom_img:
-    :return:
-    """
-    ants.image_write(img, os.path.join(path_repertoire, nom_img))
 
 
 def tab2d_atlas_sim_critere(lignes_atlas,criteres):
     """
 
-    :param lignes_atlas:
-    :param criteres:
+    :param lignes_atlas: contient listes des atlas
+    :param criteres: contient listes des critères
     :return:
     """
-    tab2D = np.zeros((len(lignes_atlas), 3), dtype=object)
-    tab2D[:, 0] = lignes_atlas
-    tab2D[:, 2] = np.array(criteres[0])
+    tab2D = np.zeros((len(lignes_atlas), 3), dtype=object)  # creation tableau numpy 2d avec nombre de ligne correspondant au nombre d'atlas, et avec 3 colonnes (atlas,valeurs similarité..)
+    tab2D[:, 0] = lignes_atlas  # 1er colonne prend les nom des atlas
+    tab2D[:, 2] = np.array(criteres[0])  # 3ieme colonne prend le critères, ici y en a qu'un de pertinent
     return tab2D
 
 
 def recupAtlas_to_tableau_simil(lignes_atlas, criteres, path_atlas, sujet, sujet_repertoire, type_transfo, interpolation, mask = None):
     """
 
-    :param lignes_atlas:
-    :param criteres:
-    :param path_atlas:
-    :param sujet:
-    :param sujet_repertoire:
-    :param type_transfo:
-    :param interpolation:
-    :param mask:
+    :param lignes_atlas: contient listes des atlas
+    :param criteres: contient listes des critères
+    :param path_atlas: chemin vers repertoire contenant l'ensemble des atlas
+    :param sujet: sujet donnée parmi l'ensemble des images sujets anatomiques
+    :param sujet_repertoire: path du repertoire d'un sujet donnée
+    :param type_transfo: type de transfo calculé pour recalage (rigide, affine,...)
+    :param interpolation: type d'interpolation choisis judicieusement selon type image à recaler
+    :param mask: path vers un masque pour le sujet correspondant
     :return:
     """
-    tab2D = tab2d_atlas_sim_critere(lignes_atlas, criteres)
-    sujet_ants = ants.image_read((os.path.join(sujet_repertoire, sujet)))
-    for i in range(len(tab2D[:, 0])):
-        Atlas_recherche = ants.image_read((os.path.join(path_atlas, tab2D[i, 0])))
-        Sujet_Warped = Recalage_atlas(Atlas_recherche, sujet_ants, type_transfo, interpolation)
-        for critere in criteres:
-            similarity = calcul_similarity_ants(Atlas_recherche, Sujet_Warped, critere, mask)
-            tab2D[i, 1] = similarity
-    plot_sujet_by_atlas_simil(tab2D[:, 0], tab2D[:, 1], sujet)
-    return tab2D
+    tab2D = tab2d_atlas_sim_critere(lignes_atlas, criteres)  # appel fct de creation de tableau numpy 2D avec atlas ligne et critere similarité
+    sujet_ants = ants.image_read((os.path.join(sujet_repertoire, sujet)))  # on charge image du sujet format nifti
+    for i in range(len(tab2D[:, 0])):  # parcours list d'atlas
+        Atlas_recherche = ants.image_read((os.path.join(path_atlas, tab2D[i, 0])))  # pour chaque iteration on charge image atlas format nifti
+        Sujet_Warped = Recalage_atlas(Atlas_recherche, sujet_ants, type_transfo, interpolation)  # On appel fct de racalage du sujet vers atlas
+        for critere in criteres:  # parcours liste critière
+            similarity = calcul_similarity_ants(Atlas_recherche, Sujet_Warped, critere, mask)  # on donne à fct de calc similarité le critère et les images dont on veut estimer similarité
+            tab2D[i, 1] = similarity  # on remplit 2ieme ligne de valeurs de similarité à chaque atlas donné
+    plot_sujet_by_atlas_simil(tab2D[:, 0], tab2D[:, 1], sujet)  # on visualisé l'evolution de la similarité par atlas
+    return tab2D #retourn tableau remplis avec pour chaque atlas (ligne de la colonne 0) une valeur en colonne 1
 
 
 def atlas_du_bon_age(lignes_atlas, criteres, path_atlas, sujet, sujet_repertoire, type_transfo, interpolation, mask = None):
     """
-
-    :param lignes_atlas:
-    :param criteres:
-    :param path_atlas:
-    :param sujet:
-    :param sujet_repertoire:
-    :param type_transfo:
-    :param interpolation:
-    :param mask:
+    :param lignes_atlas: contient listes des atlas
+    :param criteres: contient listes des critères
+    :param path_atlas: chemin vers repertoire contenant l'ensemble des atlas
+    :param sujet: sujet donnée parmi l'ensemble des images sujets anatomiques
+    :param sujet_repertoire: path du repertoire d'un sujet donnée
+    :param type_transfo: type de transfo calculé pour recalage (rigide, affine,...)
+    :param interpolation: type d'interpolation choisis judicieusement selon type image à recaler
+    :param mask: path vers un masque pour le sujet correspondant
     :return:
     """
     tab_similarity = recupAtlas_to_tableau_simil(lignes_atlas, criteres, path_atlas, sujet, sujet_repertoire, type_transfo, interpolation, mask)
-    indice_val_max = np.argmax(np.abs(tab_similarity[:, 1].astype(float)))
-    nom_max = tab_similarity[indice_val_max, 0]
-    return nom_max
+    # Tableau 2D remplis par fct recup
+    indice_val_max = np.argmax(np.abs(tab_similarity[:, 1].astype(float)))  # on cherche quel atlas (son indice) a valeur absolu similarité la plus grande
+    nom_max = tab_similarity[indice_val_max, 0]  # indice de colonne 0 pour avoir nom de l'atlas meilleur
+    return nom_max # nom du Meilleur atlas
+
+
+def SAVE_Transfo_rec_mat(atlas_fix, img_mouv, type_transfo, file_transfo_direct, file_transfo_inv, name_sujet, name_atlas):
+    """
+
+    :param atlas_fix: meilleur atlas estime pour le sujet
+    :param img_mouv: sujet donnée
+    :param type_transfo: type de transfo calculé pour recalage (rigide, affine,...)
+    :param file_transfo_direct: path repertoire pour sauver les transformation de recalage direct
+    :param file_transfo_inv: path repertoire pour sauver les transformation de recalage inverse
+    :param name_sujet: nom du sujet donné
+    :param name_atlas: nom du meilleur atlas correspondant au sujet etudié
+    :return:
+    """
+    path_file_transfo_direct = creation_chemin_fichier_mat(file_transfo_direct, name_sujet, name_atlas)  # appel fct pour recuper sujet et atlas, les combiner et joindre au path du reperrtorie de sorti
+    path_file_transfo_inv = creation_chemin_fichier_mat(file_transfo_inv, name_sujet, name_atlas)  # idem pour transfo inv
+    ants.registration(atlas_fix, img_mouv, type_of_transform=type_transfo, outprefix=path_file_transfo_direct + '_direct_')  # calcul transfo recalage direct de sujet vers atlas et sauve vers un path donné
+    ants.registration(img_mouv, atlas_fix, type_of_transform=type_transfo, outprefix=path_file_transfo_inv + '_Inverse_')  #  calcul transfo recalage inv de sujet vers atlas et sauve vers un path donné
+    return path_file_transfo_direct, path_file_transfo_inv  # retourn path vers ces transfo
 
 
 def recup_bon_atlas_avc_transfos(lignes_atlas, criteres, path_atlas, sujet, sujet_repertoire, type_transfo, interpolation, file_transfo_direct, file_transfo_inv, mask = None):
     """
-
-    :param lignes_atlas:
-    :param criteres:
-    :param path_atlas:
-    :param sujet:
-    :param sujet_repertoire:
-    :param type_transfo:
-    :param interpolation:
-    :param file_transfo_direct:
-    :param file_transfo_inv:
-    :param mask:
+    :param lignes_atlas: contient listes des atlas
+    :param criteres: contient listes des critères
+    :param path_atlas: chemin vers repertoire contenant l'ensemble des atlas
+    :param sujet: sujet donnée parmi l'ensemble des images sujets anatomiques
+    :param sujet_repertoire: path du repertoire d'un sujet donnée
+    :param type_transfo: type de transfo calculé pour recalage (rigide, affine,...)
+    :param interpolation: type d'interpolation choisis judicieusement selon type image à recaler
+    :param file_transfo_direct: path repertoire pour sauver les transformation de recalage direct
+    :param file_transfo_inv: path repertoire pour sauver les transformation de recalage inverse
+    :param mask: path vers un masque pour le sujet correspondant
     :return:
     """
-    bon_atlas = atlas_du_bon_age(lignes_atlas, criteres, path_atlas, sujet, sujet_repertoire, type_transfo, interpolation,mask)
+    bon_atlas = atlas_du_bon_age(lignes_atlas, criteres, path_atlas, sujet, sujet_repertoire, type_transfo, interpolation,mask)  # retorun meilleur atlas pour sujet donné
     sujet_ants = ants.image_read((os.path.join(sujet_repertoire, sujet)))
     atlas_ants = ants.image_read((os.path.join(path_atlas, bon_atlas)))
-    path_trf_direct, path_trf_inv = SAVE_Transfo_rec_mat(atlas_ants, sujet_ants, type_transfo, file_transfo_direct, file_transfo_inv, sujet, bon_atlas)
+    path_trf_direct, path_trf_inv = SAVE_Transfo_rec_mat(atlas_ants, sujet_ants, type_transfo, file_transfo_direct, file_transfo_inv, sujet, bon_atlas)  # calcul les transfo direct et inv et les sauve et retourn le path de sauvegarde
     return bon_atlas, path_trf_direct, path_trf_inv
 
 
 def creation_chemin_nom_img(path_repertoire_output, img_name, suffix_nom_image: str):
     """
 
-    :param path_repertoire_output:
-    :param img_name:
-    :param suffix_nom_image:
+    :param path_repertoire_output: chemin pour sauver une image apres traitement
+    :param img_name: nom de l'image avant traitement
+    :param suffix_nom_image: ajoute de suffixe pour rendre explicite le traitement réalisé
     :return:
     """
-    nom_initial, fin = (img_name[:-7], ".nii.gz") if img_name.endswith(".nii.gz") else os.path.splitext(img_name)
-    return os.path.join(path_repertoire_output, f"{nom_initial}_{suffix_nom_image}")
+    nom_initial, fin = (img_name[:-7], ".nii.gz") if img_name.endswith(".nii.gz") else os.path.splitext(img_name)  # separer nom du suffixe de format d'image
+    return os.path.join(path_repertoire_output, f"{nom_initial}_{suffix_nom_image}")  # creer path de sauvergarde avec nom qui combine nom avant traitement plus sufixe choisis apres traitmeent
 
 
 def creation_chemin_fichier_mat(path_repertoire_output,img_name, atlas_name):
@@ -245,16 +234,16 @@ def creation_chemin_fichier_mat(path_repertoire_output,img_name, atlas_name):
     return os.path.join(path_repertoire_output, f"{nom_initial}_to_{nom_2}")
 
 
-def plot_sujet_by_atlas_simil(list1,list2,sujet):
+def plot_sujet_by_atlas_simil(list1, list2, sujet):
     """
 
-    :param list1:
-    :param list2:
-    :param sujet:
+    :param list1: liste pour abscisse ici les diffèrents atlas
+    :param list2: liste pour ordonnées, ici valeurs de similarité (mutuel info ici)
+    :param sujet: sujet dont on calcul la similarité avec les atlas
     :return:
     """
-    numero_atlas_x = extraction_numero_atlas(list1)
-    similarite_abs = np.abs(list2.astype(float))
+    numero_atlas_x = extraction_numero_atlas(list1)  # passe de list de nom atlas à une liste de numero(age) de l'atlas
+    similarite_abs = np.abs(list2.astype(float))  # on prend val absolue des valeurs de similarité
     plt.figure(figsize = (10, 6))
     plt.plot(numero_atlas_x, similarite_abs, marker = 'o')
     plt.title(f" Valeurs de similarité pour chaque atlas pour le sujet {sujet[:-7]}", fontsize = 11, pad = 20)
