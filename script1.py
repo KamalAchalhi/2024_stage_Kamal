@@ -24,7 +24,6 @@ def etape1(nom_general_sujet, path_pattern, path_ouput, Nom_Atlas_anatomic_Patte
             list_tranf_inv :  Listes Path pour chaque transformation inverse (best atlas to his sujet i)
     """
 
-    ###COMMENTER LE MAXIMUM DE LIGNE POUR RENDRE CLAIRE
     debut = time.time()
     files_atlas = tls.Parcours_dossier_only_data_match(path_des_atlas, Nom_Atlas_anatomic_Pattern)   #donne un repertoire contenant les atlas et nom qui caracterise tout les atlas que je cherche, il me renvoie une liste de tout les paths fichiers qui correspondent dedans
     tab_path_sujet = tls.recup_les_sujets(nom_general_sujet, pattern_sous_repertoire_by_sujet=path_pattern)  # donne le repertoire qui contiens mes sujets anatomiques et le nom caracterisque d'un tel fichier

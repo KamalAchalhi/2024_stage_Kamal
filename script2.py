@@ -33,9 +33,9 @@ def etape2(path_des_atlas_hemi_seg, list_atlas_meilleur, list_path_sujet_rot, li
         Atlas_binary = ants.image_read(os.path.join(path_des_atlas_hemi_seg, atlas_binar))  # recup atlas binar RL grâce au nom formé ligne29 et path athlas binar RL
         transfo = warp + '_Inverse_0GenericAffine.mat' # étant donné que ma fct enregistre les fonction de recalage dans la list sans prendre en compte ce sufixe, il doit être rajouté
         Atlas_binary_warped = ants.apply_transforms(Sujet_fixe, Atlas_binary,  transformlist=transfo, direction = 'fwd', interpolator="nearestNeighbor") #Application de la trf inverse sur l'atlas binar RL adapté vers le ième sujet
-        path_atlas_binary_warped = tls.creation_chemin_nom_img(path_output_repertoire, sujet, atlas_binar) #creation de path de l'atlas binar RL apres son recalage dans espace sujet
-        AtlasRL_rec_dans_sub_space.append(path_atlas_binary_warped) #rajoute à liste des path des atlas RL apres rec
-        ants.image_write(Atlas_binary_warped, path_atlas_binary_warped) #Enregistre l'image obtenue dans le path crée
+        path_atlas_binary_warped = tls.creation_chemin_nom_img(path_output_repertoire, sujet, atlas_binar)  # creation de path de l'atlas binar RL apres son recalage dans espace sujet
+        AtlasRL_rec_dans_sub_space.append(path_atlas_binary_warped)  # rajoute à liste des path des atlas RL apres rec
+        ants.image_write(Atlas_binary_warped, path_atlas_binary_warped)  # Enregistre l'image obtenue dans le path crée
     fin = time.time()
     tps_excecution = fin - debut
     print(f"le temps d'exécution du programme est : {tps_excecution} secondes")
@@ -43,13 +43,13 @@ def etape2(path_des_atlas_hemi_seg, list_atlas_meilleur, list_path_sujet_rot, li
 
 
 if __name__ == "__main__":
-    nom_general_sujet = r'^sub-00\d+\_ses-00\d+\_acq-haste_rec-nesvor_desc-aligned_T2w.nii.gz' #format nom sujet anatomique
-    path_pattern = r'/envau/work/meca/users/2024_Kamal/real_data/lastest_nesvor/sub-00\d+\/ses-00\d+\/haste/default_reconst' #format path repertoire sujet anatomique
-    path_des_atlas_hemi_seg = r'/envau/work/meca/users/2024_Kamal/Sym_Hemi_atlas' #path des atlas binaire par hemisphère
+    nom_general_sujet = r'^sub-00\d+\_ses-00\d+\_acq-haste_rec-nesvor_desc-aligned_T2w.nii.gz'  #f ormat nom sujet anatomique
+    path_pattern = r'/envau/work/meca/users/2024_Kamal/real_data/lastest_nesvor/sub-00\d+\/ses-00\d+\/haste/default_reconst'  # format path repertoire sujet anatomique
+    path_des_atlas_hemi_seg = r'/envau/work/meca/users/2024_Kamal/Sym_Hemi_atlas'  # path des atlas binaire par hemisphère
     path_variables = "/envau/work/meca/users/2024_Kamal/2024_stage_Kamal/variables"
     path_repertoire_sujet_rot = "/envau/work/meca/users/2024_Kamal/output/output_script1"
-    path_output_repertoire = "/envau/work/meca/users/2024_Kamal/output/output_script2" #path du repertoire pour sauver les atlas RL apres recalage
-    list_atlas_meilleur = np.load(os.path.join(path_variables, "list_atlas_meilleur.npy"))   #recup list des meilleurs atlas
+    path_output_repertoire = "/envau/work/meca/users/2024_Kamal/output/output_script2"  # path du repertoire pour sauver les atlas RL apres recalage
+    list_atlas_meilleur = np.load(os.path.join(path_variables, "list_atlas_meilleur.npy"))   # recup list des meilleurs atlas
     list_path_sujet_rot = np.load(os.path.join(path_variables, "list_path_sujet_rot.npy"))
     list_tranf_direc =  np.load(os.path.join(path_variables, "list_tranf_direc.npy"))
     list_tranf_inv = np.load(os.path.join(path_variables, "list_tranf_inv.npy"))

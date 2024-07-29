@@ -285,7 +285,6 @@ def extraction_numero_sujet(list_sujet):
 
 def creation_data_frame_sujet_by_best_atlas(list_sujet, list_atlas):
     """
-
     :param list_sujet:
     :param list_atlas:
     :return:
